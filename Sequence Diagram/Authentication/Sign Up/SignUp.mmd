@@ -1,0 +1,43 @@
+sequenceDiagram
+
+actor User
+
+participant Application
+participant Auth
+participant Database
+participant Email Service
+
+User ->> Application: EnterEmailAndPassword()
+activate Application
+Application ->> Auth: SignUpRequest(email, password)
+activate Auth
+
+Auth ->> Database: GetUserByEmail(email)
+activate Database
+Database -->> Auth: exist(true/false)
+deactivate Database
+
+alt Email already exist
+    Auth -->> Application : error("Email has already existed")
+    Application -->> User: ShowErrorMessage()
+
+else Email not exiting
+    Auth ->> Database: CreateUser(email, password)
+    activate Database
+    Database -->> Auth: success
+    Auth ->> Database: CreateNewAccount("credentials")
+    activate Database
+    Database -->> Auth: success
+    
+    Auth ->> Email Service: SendVerificationCode (optional)
+
+    activate Auth
+    Auth ->> Auth: CreateSession()
+    Auth -->> Application: session data
+    deactivate Auth
+
+    deactivate Auth
+
+    Application -->> User: RedirectToHomePage()
+    deactivate Application
+end
