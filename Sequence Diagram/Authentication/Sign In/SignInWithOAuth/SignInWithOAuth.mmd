@@ -1,0 +1,58 @@
+sequenceDiagram
+
+    actor User
+
+    participant Application
+    participant Auth
+    participant OAuthProvider
+    participant Database
+
+    User ->> Application: Select SignIn with OAuth (Google/Facebook)\
+    Application ->> Auth: RedirectToOAuthProider()
+    activate Application
+
+    Auth ->> OAuthProvider: RequestOAuthToken()
+    activate OAuthProvider
+    OAuthProvider -->> User: Validate permission
+    User ->> OAuthProvider: Grant permission
+    OAuthProvider -->> Auth: OAuth Token
+    deactivate OAuthProvider
+
+    activate Auth
+    Auth ->> Database: GetUserByEmail(email)
+    activate Database
+    Database -->> Auth: userData or null
+    deactivate Database
+
+    alt Account not existing
+        Auth ->> Database: CreateUser(email,password)
+        activate Database
+        Database -->> Auth: success
+        deactivate Database
+
+        Auth ->> Database: CreateNewAccount(OAuthProvider)
+        activate Database
+        Database -->> Auth: success
+        deactivate Database
+    else Account existing
+        Auth ->> Database: UpdateUser()
+        activate Database
+        Database -->> Auth: success
+        deactivate Database
+    end
+
+    activate Auth
+    Auth ->> Auth: CreateSession()
+    Auth -->> Application: session data
+    deactivate Auth
+
+    activate Application
+    Application ->> Application: UpdateSession()
+    Application -->> User: RedirectToHomePage()
+    deactivate Application
+    
+    deactivate Auth
+    deactivate Application
+
+
+
