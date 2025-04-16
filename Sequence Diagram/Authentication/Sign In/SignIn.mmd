@@ -2,13 +2,13 @@ sequenceDiagram
 
 actor User
 
-participant Application
+participant WebBrowser
 participant Auth
 participant Database
 
-User ->> Application: EnterEmailAndPassword()
-activate Application
-Application ->> Auth: SignInRequest(email, password)
+User ->> WebBrowser: EnterEmailAndPassword()
+activate WebBrowser
+WebBrowser ->> Auth: SignInRequest(email, password)
 activate Auth
 
 Auth ->> Database: GetUserByEmail(email)
@@ -17,25 +17,25 @@ Database -->> Auth: userData or null
 deactivate Database
 
 alt User not found
-    Auth -->> Application : error("Account don't exist")
-    Application -->> User: ShowErrorMessage()
+    Auth -->> WebBrowser : error("Account don't exist")
+    WebBrowser -->> User: ShowErrorMessage()
 
 else User existing
     Auth ->> Auth: VerifyPassword(password, userData)
     alt Password incorrect
-        Auth -->> Application: error("Password incorrect")
-        Application -->> User: ShowErrorMessage()
+        Auth -->> WebBrowser: error("Password incorrect")
+        WebBrowser -->> User: ShowErrorMessage()
 
     else Password correct
         activate Auth
         Auth ->> Auth: CreateSession(userData)
-        Auth -->> Application: sessionData
+        Auth -->> WebBrowser: sessionData
         deactivate Auth
-        activate Application
-        Application ->> Application: UpdateSession()
-        Application -->> User: redirectToHomePage()
-        deactivate Application
+        activate WebBrowser
+        WebBrowser ->> WebBrowser: UpdateSession()
+        WebBrowser -->> User: redirectToHomePage()
+        deactivate WebBrowser
     end
     deactivate Auth
 end
-deactivate Application
+deactivate WebBrowser

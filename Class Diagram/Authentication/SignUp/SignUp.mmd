@@ -1,0 +1,26 @@
+classDiagram
+    class SignUpView {
+        <<Boundary>>
+        +inputEmail()
+        +inputPassword()
+        +submit()
+    }
+
+    class SignUpControl {
+        <<Control>>
+        +CheckValid(email, password): Boolean
+        +createSession(user: User): void
+    }
+
+    class User {
+        <<Entity>>
+        -email: String
+        -hashedPassword: String
+        +getEmail(): String
+        +getHashedPassword(): String
+    }
+
+    SignUpView --> SignUpControl 
+    SignUpControl --> User 
+
+direction LR
