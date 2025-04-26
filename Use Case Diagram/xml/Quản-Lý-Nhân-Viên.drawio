@@ -37,10 +37,10 @@
             <mxPoint x="130" y="100" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="ABzgtv0vVJBKbBT8HKUv-13" value="Thanh toán lương" style="ellipse;whiteSpace=wrap;html=1;" parent="ABzgtv0vVJBKbBT8HKUv-1" vertex="1">
+        <mxCell id="ABzgtv0vVJBKbBT8HKUv-13" value="Thanh toán lương" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="ABzgtv0vVJBKbBT8HKUv-1" vertex="1">
           <mxGeometry x="245" y="210" width="120" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="ABzgtv0vVJBKbBT8HKUv-14" value="Xin nghỉ phép" style="ellipse;whiteSpace=wrap;html=1;" parent="ABzgtv0vVJBKbBT8HKUv-1" vertex="1">
+        <mxCell id="ABzgtv0vVJBKbBT8HKUv-14" value="Xin nghỉ phép" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="ABzgtv0vVJBKbBT8HKUv-1" vertex="1">
           <mxGeometry x="225" y="295" width="120" height="40" as="geometry" />
         </mxCell>
         <mxCell id="ABzgtv0vVJBKbBT8HKUv-19" value="Khen thưởng" style="ellipse;whiteSpace=wrap;html=1;" parent="ABzgtv0vVJBKbBT8HKUv-1" vertex="1">
