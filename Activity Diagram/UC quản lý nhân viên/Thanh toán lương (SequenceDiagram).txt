@@ -1,0 +1,39 @@
+sequenceDiagram
+  participant HR as Admin
+  participant Browser as WebBrowser
+  participant Backend as Application
+  participant DB as Database
+  participant BankAPI as Bank API
+  participant Employee as Nhân Viên
+
+  HR ->> Browser: Mở giao diện nhập lương
+  Browser ->> Backend: GET /api/employees
+  Backend ->> DB: Truy vấn danh sách nhân viên
+  DB -->> Backend: Danh sách nhân viên
+  Backend -->> Browser: Hiển thị danh sách
+  HR ->> Browser: Nhập thông tin lương
+  HR ->> Browser: Lưu tạm (Draft)
+  Browser ->> Backend: POST /api/payroll (draft data)
+  Backend ->> DB: Lưu bảng lương (trạng thái Draft)
+  DB -->> Backend: Xác nhận lưu thành công
+  Backend -->> Browser: Thông báo "Đã lưu tạm"
+  HR ->> Browser: Submit trả lương hàng loạt
+  Browser ->> Backend: POST /api/payroll/submit
+  Backend ->> Backend: Tạo payload (STK, số tiền, mã GD)
+  Backend ->> Backend: Ký số (hash payload + secret key)
+  Backend ->> BankAPI: Gửi batch request (transactions[], signature, token)
+  BankAPI ->> BankAPI: Xác thực chữ ký số và token
+  BankAPI -->> Backend: Yêu cầu OTP doanh nghiệp
+  Backend ->> HR: Gửi OTP qua SMS/Email
+  HR ->> Browser: Nhập OTP
+  Browser ->> Backend: POST /api/verify-otp (otp_code)
+  Backend ->> BankAPI: Gửi lại request kèm OTP
+  BankAPI ->> BankAPI: Xử lý giao dịch song song (async)
+  loop Mỗi giao dịch
+    BankAPI ->> Employee: Chuyển tiền vào tài khoản
+    Employee -->> BankAPI: Trả về status (success/fail)
+  end
+  BankAPI -->> Backend: Webhook callback (status từng GD)
+  Backend ->> DB: Cập nhật trạng thái (thành công/thất bại)
+  Backend -->> Browser: Real-time kết quả qua WebSocket
+  Browser -->> HR: Hiển thị báo cáo + nút xuất file
