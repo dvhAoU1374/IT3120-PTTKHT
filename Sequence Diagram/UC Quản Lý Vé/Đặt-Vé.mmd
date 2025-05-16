@@ -5,19 +5,19 @@ config:
 ---
 
 sequenceDiagram
-actor User
-User ->> Web Browser: Gửi yêu cầu mua vé
-activate Web Browser
-Web Browser ->> Server: Kiểm tra trạng thái ghế ngồi
-activate Server
-Server ->> DB: Lấy thông tin trạng thái ghế ngồi
-activate DB
-DB -->> Server: Dữ liệu trạng thái ghế ngồi
-deactivate DB
-Server -->> Web Browser: Dữ liệu trạng thái ghế ngồi
-deactivate Server
-Web Browser -->> User: giao diện chọn ghế
-deactivate Web Browser
+    actor User
+    User ->> Web Browser: Gửi yêu cầu mua vé
+    activate Web Browser
+    Web Browser ->> Server: Kiểm tra trạng thái ghế ngồi
+    activate Server
+    Server ->> DB: Lấy thông tin trạng thái ghế ngồi
+    activate DB
+    DB -->> Server: Dữ liệu trạng thái ghế ngồi
+    deactivate DB
+    Server -->> Web Browser: Dữ liệu trạng thái ghế ngồi
+    deactivate Server
+    Web Browser -->> User: giao diện chọn ghế
+    deactivate Web Browser
 
     User ->> Web Browser: Lựa chọn ghế và gửi yêu cầu đặt
     activate Web Browser
@@ -29,8 +29,8 @@ deactivate Web Browser
     deactivate DB
 
     alt Ghế đã được đặt
-    Server -->> Web Browser: Lỗi đặt ghế
-    Web Browser -->> User: Giao diện lỗi đặt ghế (ghế đã được đặt)
+        Server -->> Web Browser: Lỗi đặt ghế
+        Web Browser -->> User: Giao diện lỗi đặt ghế (ghế đã được đặt)
 
     else Ghế trống
         Server ->> DB: Giữ ghế tạm thời
@@ -43,17 +43,17 @@ deactivate Web Browser
         User ->> Web Browser: Lựa chọn Voucher (opt) và gửi yêu cầu thanh toán
         activate Web Browser
         Web Browser ->> Server: Gửi yêu cầu thanh toán
-        Server ->> Bank: Yêu cầu lập hóa đơn và mã QR thanh toán
-        activate Bank
+        Server ->> VNPay: Yêu cầu lập hóa đơn và mã QR thanh toán
+        activate VNPay
         par Quá trình thanh toán
-            Bank ->> User : Yêu cầu thanh toán
-            User -->> Bank : Thông tin chuyển khoản
+            VNPay ->> User : Yêu cầu thanh toán
+            User -->> VNPay : Thông tin chuyển khoản
         and Server đếm ngược
             Server -->> Server: Đếm ngược
         end
 
         alt Thanh toán thành công
-            Bank -->> Server: Thanh toán thành công
+            VNPay -->> Server: Thanh toán thành công
             Server ->> DB: Cập nhật ghế
             activate DB
             DB -->> Server: Cập nhật thành công
@@ -62,7 +62,7 @@ deactivate Web Browser
             Web Browser -->> User: Giao diện thanh toán thành công + vé online
 
         else Thanh toán thất bại/ Quá thời gian
-            Bank -->> Server: Thanh toán thất bại
+            VNPay -->> Server: Thanh toán thất bại
             Server -->> DB: Bỏ giữ ghế
             activate DB
             DB -->> Server: Cập nhật thành công
@@ -73,4 +73,3 @@ deactivate Web Browser
             deactivate Web Browser
         end
     end
-

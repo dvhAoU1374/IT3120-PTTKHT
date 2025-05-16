@@ -1,0 +1,42 @@
+---
+title: Hello Title
+config:
+  theme: "neutral"
+---
+
+sequenceDiagram
+    actor User
+    User ->> Browser: Gửi đơn + các tài liệu liên quan
+    activate Browser
+    Browser ->> Browser: Kiểm tra hợp lệ thông tin
+    Browser ->> Server: Yêu cầu xử lý yêu cầu hợp tác
+    activate Server
+    Server ->> Server: Xử lý tài liệu
+    Server -->> Browser: Tài liệu đã xử lý
+    deactivate Server
+    Browser -->> User: Hiển thị tài liệu đã xử lý
+    deactivate Browser
+    User ->> Browser: Lựa chọn ký số
+    activate Browser
+    Browser ->> Server: Gửi yêu cầu ký số
+    activate Server
+    Server ->> MySign: Gửi yêu cầu ký số
+    activate MySign
+    User ->> MySign: Xác thực yêu cầu ký số trên App
+    MySign ->> MySign: Chữ ký số
+
+    MySign -->> Server: Tài liệu được kí số
+    deactivate MySign
+    Server -->> Browser: Tài liệu được kí số
+    deactivate Server
+    Browser -->> User: Hiển thị tài liệu đã được kí số
+    deactivate Browser
+
+    User ->> Browser: Lựa chọn gửi đơn
+    activate Browser
+    Browser ->> Server: Yêu cầu gửi đơn
+    activate Server
+    Server -->> Browser: Gửi đơn thành công
+    deactivate Server
+    Browser -->> User: Hiển thị gửi đơn thành công
+    deactivate Browser
