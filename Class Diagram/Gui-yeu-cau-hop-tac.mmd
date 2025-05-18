@@ -1,0 +1,106 @@
+classDiagram
+    class Admin {
+        +userId: String
+        +username: String
+        +email: String
+        +vaiTro: String
+        +chungThuSoID: String // Tham chiếu đến chứng thư số
+        +taoYeuCauHopTac(phim: Phim, nhaSanXuat: NhaSanXuat, dieuKhoanDeXuat: String): YeuCauHopTac
+        +kySoYeuCau(yeuCau: YeuCauHopTac, privateKey: String): String // Trả về chuỗi chữ ký
+        +capNhatTrangThaiYeuCau(yeuCau: YeuCauHopTac, trangThaiMoi: String, phanHoi: String)
+        +theoDoiYeuCau()
+        +dinhKemTaiLieu(yeuCau: YeuCauHopTac, taiLieu: File)
+    }
+
+    class YeuCauHopTac {
+        +maYeuCau: String
+        +ngayGui: Date
+        +ngayPhanHoi: Date
+        +trangThai: String
+        +dieuKhoanDeXuat: Text
+        +dieuKhoanThongNhat: Text
+        +phanHoiTuNhaSanXuat: Text
+        +thoiHanHopTac: DateRange
+        +chiPhiBanQuyen: Money
+        +taiLieuDinhKem: File[]
+        +chuKySoAdmin: String // Lưu chữ ký số của Admin cho yêu cầu này
+        +thongTinChungThuAdmin: String // Thông tin về chứng thư đã dùng
+        +luuThongTin()
+        +guiThongBao()
+        +xacMinhChuKySoBenGui(): Boolean // Có thể có để bên nhận (NSX) thực hiện
+    }
+
+    class Phim {
+        +maPhim: String
+        +tenPhim: String
+        +daoDien: String
+        +thoiLuong: Integer
+        +ngayPhatHanhGoc: Date
+        +tomTat: String
+        --
+        +layThongTinChiTiet(): String
+    }
+
+    class NhaSanXuat {
+        +maNhaSanXuat: String
+        +tenCongTy: String
+        +nguoiLienHe: String
+        +emailLienHe: String
+        +soDienThoai: String
+        +diaChi: String
+        --
+        +xemDanhSachYeuCau(): YeuCauHopTac[]
+        +phanHoiYeuCau(yeuCau: YeuCauHopTac, quyetDinh: Boolean, dieuKhoanDongY: String)
+        +xacMinhChuKySoYeuCau(yeuCau: YeuCauHopTac): Boolean // NSX sẽ thực hiện việc này
+    }
+
+    class HopDong {
+        +maHopDong: String
+        +ngayKy: Date
+        +ngayHieuLuc: Date
+        +ngayHetHan: Date
+        +noiDungChinh: Text
+        +fileHopDongScan: File // Có thể là file đã được ký số
+        +chuKySoRapPhim: String
+        +thongTinChungThuRapPhim: String
+        +chuKySoNhaSanXuat: String
+        +thongTinChungThuNhaSanXuat: String
+        --
+        +kiemTraHieuLuc(): Boolean
+        +xacMinhChuKyCacBen(): Boolean
+    }
+
+    Admin "1" -- "0..*" YeuCauHopTac : "Tạo và quản lý"
+    YeuCauHopTac "1" -- "1" Phim : "Liên quan đến"
+    YeuCauHopTac "1" -- "1" NhaSanXuat : "Gửi đến"
+    NhaSanXuat "1" -- "0..*" Phim : "Sản xuất/Phân phối"
+    YeuCauHopTac "0..1" -- "1" HopDong : "Dẫn đến (nếu duyệt)"
+
+    %% Các lớp phụ trợ (có thể đã có hoặc thêm mới)
+    class File {
+      +fileName: String
+      +fileType: String
+      +fileSize: Integer
+      +filePath: String
+    }
+    class DateRange {
+      +startDate: Date
+      +endDate: Date
+    }
+    class Money {
+        +amount: Decimal
+        +currency: String
+    }
+    %% (Tùy chọn) Lớp chi tiết cho Chứng thư số
+    class ChungThuSo {
+        +chungThuSoID: String
+        +serialNumber: String
+        +chuSoHuu: String
+        +nhaCungCapCA: String
+        +ngayHieuLuc: Date
+        +ngayHetHan: Date
+        +publicKeyData: String // Dữ liệu khóa công khai
+        +userID: String // Liên kết với Admin
+    }
+    Admin "1" -- "0..1" ChungThuSo : "Sở hữu"
+    YeuCauHopTac ..> ChungThuSo : "Được ký bởi"
