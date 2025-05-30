@@ -1,0 +1,59 @@
+---
+config:
+  theme: neutral
+---
+sequenceDiagram
+        actor user as :Customer
+        participant FE as :WebBrowser
+        participant ctrl as :BookingController
+        participant serv as :BookingService
+        participant payserv as :PaymentService
+        participant repo as :TicketRepository
+        participant seat as :SeatRepository
+        participant VNPay
+
+        activate FE
+        user ->> FE: cancelTicket(ticketID)
+        FE -->> user: giao diện yêu cầu xác nhận
+        user ->> FE: Xác nhận hủy
+
+        alt Xác nhận không hủy
+            FE -->> user: Không hủy vé
+        else Xác nhận hủy
+            FE ->> ctrl: cancelTicket(ticketID)
+            activate ctrl
+            ctrl ->> serv: cancelTicket(ticketID)
+            deactivate ctrl
+            activate serv
+            serv ->> serv: checkCancelCondition(ticketID)
+            deactivate serv
+            alt Không thể hủy
+                activate serv
+                serv -->> ctrl: Thông báo không thể hủy
+                deactivate serv 
+                activate ctrl
+                ctrl -->> FE: Thông báo không thể hủy
+                deactivate ctrl
+                FE -->> user: Thông báo không thể hủy
+            else Có thể hủy
+                activate ctrl
+                ctrl ->> payserv: refund(ticketID)
+                activate payserv
+                payserv ->> VNPay: refund(ticketID)
+                VNPay -->> payserv: Kết quả hoàn tiền
+                payserv ->> seat: changeSeatStatus(state)
+                activate seat
+                seat -->> payserv: Trạng thái của ghế
+                deactivate seat
+                payserv ->> repo: changeStatus(state)
+                activate repo
+                repo -->> payserv: Trạng thái vé sau hoàn tiền
+                deactivate repo
+                payserv -->> ctrl: Trạng thái vé sau khi hoàn tiền
+                deactivate payserv
+                ctrl -->> FE: Trạng thái vé sau khi hoàn tiền
+                deactivate ctrl 
+                FE -->> user: Trạng thái vé sau khi hoàn tiền
+            end
+        end
+        deactivate FE

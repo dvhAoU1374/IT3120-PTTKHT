@@ -1,0 +1,93 @@
+---
+config:
+  theme: neutral
+  layout: dagre
+  look: classic
+title: Booking
+---
+classDiagram
+direction LR
+    class Showtime {
+	    - showtime_id : String
+	    - movie : Movie
+	    - room : Room
+	    - start_time : LocalDateTime
+	    - end_time : LocalDateTime
+    }
+    class Seat {
+	    - seat_id : String
+	    - room : Room
+	    - seat_type : String
+	    - seat_status : String
+    }
+    class Ticket {
+	    - ticket_id : String
+	    - customer: Customer
+	    - seat: Seat
+	    - room: Room
+	    - cinema: Cinema
+	    - showtime: Showtime
+	    - movie: Movie
+	    - voucher: Voucher
+	    - price : Float
+	    - ticket_status : String
+	    - paymentResponse: PaymentResponse
+    }
+    class PaymentResponse {
+	    - payment_id: String
+	    - ticket: Ticket
+	    - RspCode: String
+	    - message: String
+    }
+    class BookingController {
+	    - bookingService: BookingService
+	    - paymentService: PaymentService
+	    + getShowtimeList(cinema_id: String, room_id: String) List~Showtime~
+	    + getSeatList(showtime_id: String) List~Seat~
+	    + checkSeatStatus(seat_id: String) String
+	    + getPaymentResponse(ticket_id: String) PaymentResponse
+    }
+    class BookingService {
+	    - seatRepository: SeatRepository
+	    - showtimeRepository: ShowtimeRepository
+	    - ticketRepository: TicketRepository
+	    + getShowtimeList(cinema_id: String, room_id: String) List~Showtime~
+	    + getSeatList(room_id: String) List~Seat~
+	    + getSeatStatus(seat: Seat) String
+	    + changeSeatStatus(seat: Seat, status: String) String
+	    + createTicket(customer_id: String, voucher_id: String, seat_id: String, cinema_id: String, showtime_id: String) Ticket
+    }
+    class PaymentService {
+	    - paymentRepository: PaymentRepository
+	    + getPaymentResponse(ticket_id: String): PaymentResponse
+    }
+    class PaymentResponseRepository {
+	    + findByTicket(seat_id: String) PaymentResponse
+    }
+    class SeatRepository {
+	    + findByID(seat_id: String) Seat
+	    + findAllByRoom(room: Room) List~Seat~
+    }
+    class ShowtimeRepository {
+	    + findAllByCinemaAndRoom(cinema_id: String, room_id: Room) List~Showtime~
+    }
+    class TicketRepository {
+	    + save(ticket: Ticket) Ticket
+    }
+
+	<<Controller>> BookingController
+	<<Service>> BookingService
+	<<Repository>> SeatRepository
+	<<Repository>> ShowtimeRepository
+	<<Repository>> TicketRepository
+
+    BookingController "1" o-- "1" BookingService
+    BookingController "1" o-- "1" PaymentService
+    BookingService "1" o-- "1" SeatRepository
+    PaymentService "1" o-- "1" PaymentResponseRepository
+    BookingService "1" o-- "1" ShowtimeRepository
+    BookingService "1" o-- "1" TicketRepository
+    SeatRepository -- Seat
+    ShowtimeRepository -- Showtime
+    TicketRepository -- Ticket
+    PaymentResponseRepository -- PaymentResponse

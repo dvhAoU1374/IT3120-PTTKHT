@@ -1,0 +1,43 @@
+sequenceDiagram
+    actor User
+    participant FE as Frontend App
+    participant BE as Backend Server
+    participant DB as Database
+
+    User->>FE: Mở trang chi tiết phim
+    activate FE
+    FE->>BE: GET /movies/{movieId}
+    activate BE
+    BE->>DB: Truy vấn thông tin phim
+    activate DB
+    DB-->>BE: Trả về dữ liệu phim
+    deactivate DB
+    BE-->>FE: Hiển thị thông tin phim
+    deactivate BE
+    FE-->>User: Hiển thị trang chi tiết phim
+    User->>FE: Chọn đánh giá, viết comment và nhấn "Gửi"
+    FE->>BE: POST /ratings {movieId, userId, rating, comment}
+    activate BE
+    BE->>BE: Kiểm tra đăng nhập
+    alt Phiên đăng nhập hợp lệ  
+        BE->>BE: Kiểm tra tính hợp lệ comment
+        alt Vi phạm tiêu chuẩn
+            BE-->>FE: 403 Forbidden + "Vi phạm tiêu chuẩn"
+            FE-->>User: Hiển thị lỗi "Bình luận vi phạm"
+            
+        else Bình luận hợp lệ
+            BE->>DB: INSERT INTO Ratings, Comments
+            activate DB
+            DB-->>BE: Lưu thành công
+            deactivate DB
+            BE->>BE: Tính toán điểm trung bình
+            BE-->>FE: 200 OK + Điểm mới + Comment mới
+            FE-->>User: Hiển thị kết quả (ratings, điểm TB, comments)
+        end
+    else Phiên không hợp lệ
+        BE-->>FE: 401 Unauthorized
+        deactivate BE
+        FE-->>User: Hiển thị popup đăng nhập
+        deactivate FE
+
+    end  

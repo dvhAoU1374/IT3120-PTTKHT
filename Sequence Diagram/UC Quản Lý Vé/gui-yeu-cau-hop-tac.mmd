@@ -1,0 +1,73 @@
+---
+config:
+  theme: neutral
+---
+sequenceDiagram
+        actor ad as :Admin
+        participant fe as :WebBrowser
+        participant ctrl as :CoopController
+        participant serv as :CoopService
+        participant email as :EmailService
+        participant template as :TemplateRepository
+        participant docs as :DocumentRepository 
+        participant kí as App MySign
+
+        ad ->> fe: chooseTemplate(templateID)
+        activate fe
+        fe ->> ctrl: chooseTemplate(templateID)
+        activate ctrl
+        ctrl ->> serv: chooseTemplate(templateID)
+        activate serv
+        serv ->> template: getTemplate(templateID)
+        activate template
+        template -->> serv: Mẫu đơn trống
+        deactivate template
+        serv -->> ctrl: Mẫu đơn trống
+        deactivate serv
+        ctrl -->> fe: Mẫu đơn trống
+        deactivate ctrl
+        fe -->> ad: Mẫu đơn trống
+        ad ->> fe: Điền thông tin và upload tài liệu
+        fe ->> ctrl: submitForm()
+        activate ctrl
+        ctrl ->> serv: createDocument(form)
+        deactivate ctrl
+        activate serv
+        serv ->> docs: saveDocument(document)
+        activate docs
+        docs -->> serv: Tài liệu
+        deactivate docs 
+        serv ->> kí: signatureRequest(document)
+        deactivate serv
+        activate kí
+        ad ->> kí: Xác nhận cho phép sử dụng chữ ký số
+        serv ->> kí: getAuthorizedDocs(document)
+        activate serv
+        kí -->> serv: Tài liệu đã được kí số
+        deactivate kí
+        serv ->> docs: changeStatus(status)
+        activate docs
+        docs -->> serv: Trạng thái của tài liệu
+        deactivate docs
+        par
+                serv ->> ctrl: Trạng thái của tài liệu
+                deactivate serv
+
+                activate ctrl
+                ctrl ->> fe: Trạng thái của tài liệu
+                deactivate ctrl
+                fe ->> ad: Trạng thái của tài liệu
+        and
+                activate ctrl
+                ctrl ->> email: sendEmail(destination, docs)
+                activate email
+                email -->> ctrl: Kết quả gửi tài liệu
+                deactivate email
+                %% deactivate ctrl
+                %% activate ctrl
+                ctrl -->> fe: Kết quả gửi tài liệu
+                deactivate ctrl
+                fe -->> ad: Kết quả gửi tài liệu
+        end
+        deactivate fe
+        

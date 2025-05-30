@@ -1,0 +1,60 @@
+---
+config:
+  theme: neutral
+---
+sequenceDiagram
+        actor user as :Customer
+        participant FE as :WebBrowser
+        participant Ctrl as :BookingController
+        participant payment as :PaymentService
+        participant ticket as :TicketRepository
+        participant VNPay
+
+        user ->> FE: Chọn phương thức thanh toán
+        activate FE
+        alt Thanh toán trực tiếp
+            user ->> FE: directPay(ticketID)
+            FE ->> Ctrl: directPay(ticketID)
+            activate Ctrl
+            Ctrl ->> payment: directPay(ticketID)
+            deactivate Ctrl
+            activate payment
+            payment ->> payment: directPay(ticketId)
+            payment ->> ticket: changeStatus(ticketID, state)
+            activate ticket
+            ticket -->> payment: Trạng thái vé
+            deactivate ticket
+            deactivate payment
+        else Thanh toán trực tuyến
+            user ->> FE: onlinePay(ticketID, voucherID)
+            FE ->> Ctrl: onlinePay(ticketID, voucherID)
+            activate Ctrl
+            Ctrl ->> payment: getPaymentLink(ticketID, voucherID)
+            activate payment
+            payment -->> Ctrl: Đường link thanh toán
+            deactivate payment
+            Ctrl -->> FE: Đường link thanh toán
+            deactivate Ctrl
+            FE ->> FE: Chuyển hướng tới giao diện VNPay
+            deactivate FE
+
+            user ->> VNPay: Xác thực tài khoản
+            activate VNPay
+            user ->> VNPay: Thanh toán
+            par Lấy kết quả giao diện 
+                activate payment
+                payment ->> VNPay: collectPaymentResponse(payment_link)
+                VNPay -->> payment: Kết quả giao dịch
+                payment ->> ticket: changeStatus(ticketID, status)
+                activate ticket
+                ticket -->> payment: Trạng thái vé
+                deactivate ticket
+                deactivate payment
+            and Điều hướng giao diện
+                VNPay -->> VNPay: Chuyển hướng về giao diện của Website
+                deactivate VNPay
+            end
+        end
+
+
+        

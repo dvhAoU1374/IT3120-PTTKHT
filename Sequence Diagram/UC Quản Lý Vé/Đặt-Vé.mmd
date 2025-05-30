@@ -1,75 +1,91 @@
 ---
-title: Hello Title
 config:
-  theme: "neutral"
+  theme: neutral
 ---
-
 sequenceDiagram
-    actor User
-    User ->> Web Browser: Gửi yêu cầu mua vé
-    activate Web Browser
-    Web Browser ->> Server: Kiểm tra trạng thái ghế ngồi
-    activate Server
-    Server ->> DB: Lấy thông tin trạng thái ghế ngồi
-    activate DB
-    DB -->> Server: Dữ liệu trạng thái ghế ngồi
-    deactivate DB
-    Server -->> Web Browser: Dữ liệu trạng thái ghế ngồi
-    deactivate Server
-    Web Browser -->> User: giao diện chọn ghế
-    deactivate Web Browser
+        actor User as :Customer
+        participant FE as :WebBrowser
+        participant Ctrl as :BookingController
+        participant Service as :BookingService
+        participant Repo as :SeatRepository
+        participant showtime as :ShowtimeRepository
+        participant Ticket as :TicketRepository
+        participant VNPay as :PaymentService
 
-    User ->> Web Browser: Lựa chọn ghế và gửi yêu cầu đặt
-    activate Web Browser
-    Web Browser ->> Server: Gửi yêu cầu đặt ghế
-    activate Server
-    Server ->> DB: Kiểm tra trạng thái ghế được chọn
-    activate DB
-    DB -->> Server: Trạng thái ghế được chọn
-    deactivate DB
+        User ->> FE: chooseCinema(cinemaID, roomID)
+        activate FE
+        FE ->> Ctrl: chooseCinema(cinemaID, roomID)
+        activate Ctrl
+        Ctrl ->> Service: getShowtimeList(cinemaID, roomID)
+        activate Service
+        Service ->> showtime: getShowtimeList(cinemaID, roomID)
+        activate showtime
+        showtime -->> Service: Danh sách suất chiếu 
+        deactivate showtime
+        Service  -->> Ctrl: Danh sách suất chiếu 
+        deactivate Service
+        Ctrl -->> FE: Danh sách suất chiếu 
+        deactivate Ctrl
+        FE -->> User: Danh sách suất chiếu 
+        FE ->> Ctrl: getSeatList(cinemaID, showtimeID)
+        activate Ctrl
+        Ctrl ->> Service: getSeatList(cinemaID, showtimeID)
+        activate Service
+        Service ->> Repo: getSeatList(cinemaID, showtimeID)
+        activate Repo
+        Repo -->> Service: Danh sách trạng thái ghế ngồi 
+        deactivate Repo
+        Service -->> Ctrl: Danh sách trạng thái ghế ngồi 
+        deactivate Service
+        Ctrl -->> FE: Danh sách trạng thái ghế ngồi
+        deactivate Ctrl
+        FE -->> User: Danh sách trạng thái ghế ngồi
 
-    alt Ghế đã được đặt
-        Server -->> Web Browser: Lỗi đặt ghế
-        Web Browser -->> User: Giao diện lỗi đặt ghế (ghế đã được đặt)
-
-    else Ghế trống
-        Server ->> DB: Giữ ghế tạm thời
-        activate DB
-        DB -->> Server: Cập nhật thành công
-        deactivate DB
-        Server -->> Web Browser: Chọn ghế thành công
-        Web Browser -->> User: Giao diện chọn Voucher
-        deactivate Web Browser
-        User ->> Web Browser: Lựa chọn Voucher (opt) và gửi yêu cầu thanh toán
-        activate Web Browser
-        Web Browser ->> Server: Gửi yêu cầu thanh toán
-        Server ->> VNPay: Yêu cầu lập hóa đơn và mã QR thanh toán
-        activate VNPay
-        par Quá trình thanh toán
-            VNPay ->> User : Yêu cầu thanh toán
-            User -->> VNPay : Thông tin chuyển khoản
-        and Server đếm ngược
-            Server -->> Server: Đếm ngược
+        User ->> FE: chooseSeat(seatID)
+        FE ->> Ctrl: chooseSeat(seatID)
+        activate Ctrl
+        Ctrl ->> Service: checkSeatStatus(seatID)
+        activate Service
+        Service ->> Repo: getSeatStatus(seatID)
+        activate Repo
+        Repo -->> Service: Trạng thái ghế được chọn
+        deactivate Repo
+        %% deactivate Service
+        %% deactivate Ctrl
+        alt Ghế đã được đặt
+            %% activate Service
+            Service -->> Ctrl: Thông báo không đặt được ghế
+            %% deactivate Service 
+            %% activate Ctrl
+            Ctrl -->> FE: Thông báo không đặt được ghế
+            deactivate Ctrl
+            FE -->> User: Thông báo không đặt được ghế
+        else Ghế trống
+            %% activate Service
+            Service ->> Repo: changeSeatStatus(seadID, "đang chờ")
+            Service ->> Ticket: create(seatID, cinemaID, showtimeID)
+            activate Ticket
+            Ticket -->> Service: ID của vé vừa tạo
+            deactivate Ticket
+            Service -->> Ctrl: ID của vé vừa tạo
+            deactivate Service
+            activate Ctrl
+            Ctrl -->> FE: ID của vé vừa tạo
+            deactivate Ctrl
+            FE -->> User: ID của vé vừa tạo
+            Note over User, VNPay: Xem chi tiết trong biểu đồ "Thanh Toán"
+            %% User ->> FE: pay(ticketID, voucherID)
+            %% FE ->> Ctrl: pay(ticketID, voucherID) 
+            %% Ctrl ->> Ctrl: createInvoice(ticketID)
+            %% Ctrl ->> VNPay: pay(invoice)
+            activate Ctrl
+            Ctrl ->> VNPay: getPaymentResponse(ticketId)
+            activate VNPay
+            VNPay -->> Ctrl: Kết quả thanh toán
+            deactivate VNPay
+            Ctrl -->> FE: Kết quả thanh toán
+            deactivate Ctrl
+            FE -->> User: Kết quả thanh toán
         end
+    deactivate FE
 
-        alt Thanh toán thành công
-            VNPay -->> Server: Thanh toán thành công
-            Server ->> DB: Cập nhật ghế
-            activate DB
-            DB -->> Server: Cập nhật thành công
-            deactivate DB
-            Server -->> Web Browser: Thanh toán thành công
-            Web Browser -->> User: Giao diện thanh toán thành công + vé online
-
-        else Thanh toán thất bại/ Quá thời gian
-            VNPay -->> Server: Thanh toán thất bại
-            Server -->> DB: Bỏ giữ ghế
-            activate DB
-            DB -->> Server: Cập nhật thành công
-            deactivate DB
-            Server -->> Web Browser: Thanh toán thất bại
-            deactivate Server
-            Web Browser -->> User : Giao diện thanh toán thất bại
-            deactivate Web Browser
-        end
-    end

@@ -1,0 +1,118 @@
+---
+config:
+  theme: neutral
+  layout: dagre
+  look: classic
+title: Booking
+---
+classDiagram
+direction LR
+    class Movie {
+	    - movie_id : String
+	    - movie_name : String
+	    - poster_link : String
+	    - trailer_link : String
+	    - duration : Integer
+	    - movie_label : String
+	    - language : String
+	    - start_date : LocalDate
+	    - description : String
+	    - base_price : Integer
+    }
+    class Showtime {
+	    - showtime_id : String
+	    - movie : Movie
+	    - room : Room
+	    - start_time : LocalDateTime
+	    - end_time : LocalDateTime
+    }
+    class Seat {
+	    - seat_id : String
+	    - room : Room
+	    - seat_type : String
+	    - seat_status : String
+    }
+    class Room {
+	    - room_id : String
+        - cinema: Cinema
+	    - room_type : String
+	    - max_capacity : Integer
+    }
+    class Cinema {
+	    - cinema_id : String
+	    - location: String
+    }
+    class Ticket {
+	    - ticket_id : String
+	    - customer: Customer
+	    - seat: Seat
+	    - room: Room
+        - cinema: Cinema
+	    - showtime: Showtime
+	    - movie: Movie
+	    - voucher: Voucher
+	    - price : Float
+	    - ticket_status : String
+	    - paymentResponse: PaymentResponse
+    }
+    class Voucher {
+	    - voucher_id : String
+	    - discount : Float
+	    - description : String
+	    - quantity : Integer
+    }
+    class Customer {
+	    - customer_id: String
+    }
+    class User {
+	    - username : String
+	    - password : String
+	    - first_name : String
+	    - last_name : String
+	    - role: String
+    }
+    class Admin {
+	    - admin_id: String
+    }
+    class PaymentResponse {
+	    - payment_id: String
+	    - RspCode: String
+	    - message: String
+    }
+    class Review {
+	    - review_id: String
+	    - customer: Customer
+	    - rate_star: Integer
+	    - content: String
+	    - movie: Movie
+    }
+
+	<<abstract>> User
+	<<entity>> Movie
+	<<entity>> Showtime
+	<<entity>> Seat
+	<<entity>> Room
+	<<entity>> Ticket
+	<<entity>> Voucher
+	<<entity>> Customer
+	<<entity>> Admin
+	<<entity>> PaymentResponse
+	<<entity>> Review
+    <<entity>> Cinema
+
+    Customer --|> User
+    Admin --|> User
+    PaymentResponse "1" --* "1" Ticket
+    Review "0..*" -- "1" Movie
+    Customer "1" -- "0..*" Review
+    Movie "1" -- "1..*" Showtime
+    Showtime "0..*" -- "1" Room
+    Seat "1..*" -- "1" Room
+    Ticket "1" -- "1" Seat
+    Room "1..*" -- "1" Cinema
+    Ticket "1..*" -- "1" Room
+    Ticket "1..*" -- "1" Showtime
+    Ticket "1..*" -- "1" Movie
+    Ticket "1" -- "1" Cinema
+    Ticket "1" -- "0..*" Voucher
+    Customer "1" -- "0..*" Ticket

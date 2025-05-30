@@ -1,0 +1,61 @@
+---
+config:
+  theme: neutral
+  layout: dagre
+  look: classic
+title: Booking
+---
+classDiagram
+direction LR
+    class Ticket {
+	    - ticket_id : String
+	    - customer: Customer
+	    - seat: Seat
+	    - room: Room
+	    - cinema: Cinema
+	    - showtime: Showtime
+	    - movie: Movie
+	    - voucher: Voucher
+	    - price : Float
+	    - ticket_status : String
+	    - paymentResponse: PaymentResponse
+    }
+    class PaymentResponse {
+	    - payment_id: String
+	    - ticket: Ticket
+	    - RspCode: String
+	    - message: String
+    }
+    class BookingController {
+	    + directPay(ticket_id: String) String
+        + getPaymentLink(ticket_id) String
+    }
+    class PaymentService {
+	    - paymentRepository: PaymentRepository
+        - ticketRepository: TicketRepository
+	    + directPay(ticket_id: String) String
+        + createPaymentLink(ticket_id) String
+        + collectPaymentResponse(ticket_id: String,payment_link: String) PaymentResponse
+        + changeTicketStatus(ticket: Ticket, status: String) String
+
+    }
+    class PaymentResponseRepository {
+	    + save(rsp: PaymentResponse) PaymentResponse
+    }
+    class TicketRepository {
+	    + update(ticket: Ticket) Ticket
+    }
+
+	<<Controller>> BookingController
+
+	<<Repository>> TicketRepository
+
+
+    BookingController "1" o-- "1" PaymentService
+
+    PaymentService "1" o-- "1" PaymentResponseRepository
+    PaymentService "1" o-- "1" TicketRepository
+ 
+
+    TicketRepository -- Ticket
+    PaymentResponseRepository -- PaymentResponse
