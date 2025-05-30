@@ -1,0 +1,88 @@
+---
+config:
+  theme: neutral
+---
+erDiagram
+    Customer {
+        Varchar(50) user_id PK
+        Varchar(50) username UK
+        Varchar(100) hashed_password
+        Varchar(50) first_name
+        Varchar(50) last_name
+        Integer role
+    }
+    Ticket {
+        Varchar(100) ticket_id PK
+        Varchar(50) customer_id FK
+        Varchar(50) seat_id FK
+        Varchar(50) showtime_id FK
+        Varchar(50) cinema_id FK
+        Float price
+        Integer ticket_status
+        Varchar(50) payment_response_id FK
+    }
+    Movie {
+        Varchar(50) movie_id PK
+        Varchar(200) movie_name
+        Varchar(200) poster_link
+        Varchar(200) trailer_link
+        Float duration
+        Varchar(200) movie_label
+        Varchar(50) Language
+        DateTime start_date
+        Varchar(1000) description
+        Float base_price
+    }
+    Review {
+        Varchar(50) review_id PK
+        Varchar(50) customer_id FK
+        Integer rate_star
+        Varchar(500) content
+        Varchar(50) movie_id FK
+    }
+    Showtime {
+        Varchar(50) showtime_id PK
+        Varchar(50) movie_id FK
+        Varchar(50) room_id FK
+        DateTime start_time
+        DateTime end_time
+    }
+    Room {
+        Varchar(50) room_id PK
+        Varchar(50) cinema_id FK
+        Integer room_type
+        Integer max_capacity
+    }
+    Cinema {
+        Varchar(50) cinema_id PK
+        Varchar(200) location
+    }
+    Voucher {
+        Varchar(50) voucher_id PK
+        Float discount
+        Varchar(200) description
+        Integer quantity
+    }
+    PaymentResonse{
+        Varchar(50) payment_id PK
+        Varchar(50) response_code
+        Varchar(100) message
+    }
+    Seat {
+        Varchar(50) seat_id PK
+        Varchar(50) room_id FK
+        Integer seat_type
+        Integer seat_status
+    }
+    Customer ||--o| Ticket : ""
+    Ticket ||--|| Seat : ""
+    Ticket }|--|| Showtime : ""
+    Ticket }|--|| Cinema : ""
+    Ticket }|--o{ Voucher : ""
+    Ticket ||--|| PaymentResonse : ""
+    Review }o--|| Movie : ""
+    Movie ||--|{ Showtime: ""
+    Showtime |o--|| Room : ""
+    Room }|--|| Cinema : ""
+    Room ||--|{ Seat:""
+    Customer ||--o{ Review :""
